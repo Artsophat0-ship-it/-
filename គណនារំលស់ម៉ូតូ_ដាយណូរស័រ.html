@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>គណនារំលស់ម៉ូតូ - ដាយណូរស័រ កំពង់សោម</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans Khmer",Arial,sans-serif;background:#f3f6fa;color:#172033}
+.wrap{max-width:760px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 4px 18px #00000012}
+h1{font-size:24px;margin:4px 0 6px}.sub{color:#667085;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.grid{grid-template-columns:1fr}}
+label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}input,select{width:100%;padding:12px;border:1px solid #d7dde7;border-radius:10px;font-size:16px;background:#fff}
+button{border:0;border-radius:11px;padding:13px 16px;font-size:16px;font-weight:700;cursor:pointer}
+.primary{background:#1264e8;color:white;width:100%;margin-top:14px}.secondary{background:#eef3f9;color:#172033}.danger{background:#fff0f0;color:#b42318}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:560px){.results{grid-template-columns:1fr 1fr}}
+.stat{background:#f7f9fc;border-radius:12px;padding:12px}.stat small{display:block;color:#667085}.stat strong{font-size:19px;display:block;margin-top:4px}
+.big{grid-column:1/-1;background:#eaf2ff}.big strong{font-size:27px;color:#1264e8}
+.table-wrap{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse;min-width:560px}th,td{padding:9px;border-bottom:1px solid #edf0f5;text-align:right;font-size:13px}th{text-align:center;background:#f7f9fc}
+.note{font-size:13px;color:#667085;line-height:1.6}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1}
+.hidden{display:none}.brand{font-size:13px;font-weight:700;color:#1264e8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="brand">🏍️ ហាងលក់ម៉ូតូ ដាយណូរស័រ កំពង់សោម</div>
+    <h1>គណនារំលស់ម៉ូតូ</h1>
+    <div class="sub">គណនាបង់ប្រចាំខែ • ការប្រាក់សរុប • តារាងរំលស់</div>
+    <div class="grid">
+      <div><label>តម្លៃ/ចំនួនទឹកប្រាក់ខ្ចី ($)</label><input id="price" type="number" value="2000" min="0" step="0.01"></div>
+      <div><label>ប្រាក់កក់ ($)</label><input id="down" type="number" value="0" min="0" step="0.01"></div>
+      <div><label>ការប្រាក់ (% ក្នុង 1 ខែ)</label><input id="rate" type="number" value="1.5" min="0" step="0.01"></div>
+      <div><label>ចំនួនខែ</label><input id="months" type="number" value="24" min="1" step="1"></div>
+      <div><label>របៀបគណនា</label>
+        <select id="method">
+          <option value="flat">Flat / ការប្រាក់ថេរ</option>
+          <option value="reducing">Reducing Balance / ការប្រាក់លើប្រាក់នៅសល់</option>
+        </select>
+      </div>
+      <div><label>ថ្លៃបន្ថែម ($)</label><input id="fee" type="number" value="0" min="0" step="0.01"></div>
+    </div>
+    <button class="primary" onclick="calc()">🧮 គណនារំលស់</button>
+  </div>
+
+  <div class="card">
+    <h2>លទ្ធផល</h2>
+    <div class="results">
+      <div class="stat"><small>ប្រាក់ដើម</small><strong id="principal">$0.00</strong></div>
+      <div class="stat"><small>ការប្រាក់សរុប</small><strong id="interest">$0.00</strong></div>
+      <div class="stat"><small>ថ្លៃបន្ថែម</small><strong id="feeout">$0.00</strong></div>
+      <div class="stat big"><small>ត្រូវបង់ប្រចាំខែ</small><strong id="monthly">$0.00</strong></div>
+      <div class="stat"><small>ត្រូវបង់សរុប</small><strong id="total">$0.00</strong></div>
+      <div class="stat"><small>ប្រាក់បង់លើសពីប្រាក់ដើម</small><strong id="extra">$0.00</strong></div>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="secondary" onclick="clearForm()">↺ សម្អាត</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>តារាងបង់រំលស់</h2>
+    <div class="table-wrap">
+      <table><thead><tr><th>ខែ</th><th>ប្រាក់ដើម</th><th>ការប្រាក់</th><th>បង់សរុប</th><th>នៅសល់</th></tr></thead>
+      <tbody id="schedule"></tbody></table>
+    </div>
+    <p class="note">Flat គណនាការប្រាក់លើប្រាក់ដើមដើមទាំងមូលរាល់ខែ។ Reducing Balance គណនាការប្រាក់លើប្រាក់ដើមដែលនៅសល់ ហើយប្រើរូបមន្តបង់ប្រចាំខែស្មើគ្នា។</p>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>"$"+Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function calc(){
+  const price=Math.max(0,+$("price").value||0);
+  const down=Math.min(price,Math.max(0,+$("down").value||0));
+  const P=price-down;
+  const rate=Math.max(0,+$("rate").value||0)/100;
+  const n=Math.max(1,Math.floor(+$("months").value||1));
+  const fee=Math.max(0,+$("fee").value||0);
+  const method=$("method").value;
+  let payment=0,totalInterest=0,balance=P,rows=[];
+
+  if(method==="flat"){
+    totalInterest=P*rate*n;
+    payment=(P+totalInterest+fee)/n;
+    for(let m=1;m<=n;m++){
+      const principalPart=P/n;
+      const interestPart=P*rate;
+      balance=Math.max(0,balance-principalPart);
+      rows.push([m,principalPart,interestPart,principalPart+interestPart+(m===1?fee:0),balance]);
+    }
+  }else{
+    if(rate===0) payment=(P+fee)/n;
+    else payment=P*(rate*Math.pow(1+rate,n))/(Math.pow(1+rate,n)-1);
+    for(let m=1;m<=n;m++){
+      const interestPart=balance*rate;
+      let principalPart=payment-interestPart;
+      if(m===n) principalPart=balance;
+      const thisPay=principalPart+interestPart+(m===1?fee:0);
+      balance=Math.max(0,balance-principalPart);
+      totalInterest+=interestPart;
+      rows.push([m,principalPart,interestPart,thisPay,balance]);
+    }
+  }
+  const total=(method==="flat"?P+totalInterest+fee:payment*n+fee);
+  if(method==="flat") totalInterest=P*rate*n;
+  $("principal").textContent=money(P);
+  $("interest").textContent=money(totalInterest);
+  $("feeout").textContent=money(fee);
+  $("monthly").textContent=money(payment);
+  $("total").textContent=money(total);
+  $("extra").textContent=money(total-P);
+  $("schedule").innerHTML=rows.map(r=>`<tr><td style="text-align:center">${r[0]}</td><td>${money(r[1])}</td><td>${money(r[2])}</td><td>${money(r[3])}</td><td>${money(r[4])}</td></tr>`).join("");
+}
+function clearForm(){
+  $("price").value=0;$("down").value=0;$("rate").value=0;$("months").value=12;$("fee").value=0;calc();
+}
+calc();
+</script>
+</body>
+</html>
